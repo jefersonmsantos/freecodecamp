@@ -1,0 +1,84 @@
+<html>
+    <head>
+
+        <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+   
+    </head>
+
+    <style>
+
+        .bar{
+            fill:navy;
+        }
+
+        .bar:hover{
+            fill:red;
+        }
+
+    </style>
+
+    <body>
+
+    </body>
+    <script>
+        document.addEventListener('DOMContentLoaded',function(){
+            const req = new XMLHttpRequest();
+            req.open("GET",'https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json',true);
+            req.send();
+            req.onload = function(){
+                const json = JSON.parse(req.responseText);
+                let DATES = [];
+                let GDP = [];
+                json['data'].forEach(function(val){
+                    GDP.push(val[1]);
+                    DATES.push(val[0]);
+                });
+                
+                /*console.log(GDP);*/
+                
+
+
+                const w = 1100;
+                const h =300;
+
+                const xScale = d3.scaleLinear().domain([0,d3.max(json['data'],(d,i)=>i)]).range([0,w]);
+                const yScale = d3.scaleLinear().domain([0,d3.max(json['data'],(d)=>d[1])]).range([h,0]);
+
+                const svg = d3.select('body')
+                            .append('svg')
+                            .attr('width',w)
+                            .attr('height',h);
+                
+                svg.selectAll('rect')
+                .data(json['data'])
+                .enter()
+                .append('rect')
+                .attr('x',(d,i) => xScale(i))
+                .attr('y',(d,i)=>yScale(d[1]))
+                .attr('width',2)
+                .attr('height',(d,i)=>h-yScale(d[1]))
+                .attr('class','bar')
+                .append('title')
+                .text((d)=>'Date: ' + d[0] + '\nGDP: ' + d[1])
+
+                /*svg.selectAll('text')
+                .data(json['data'])
+                .enter()
+                .append('text')
+                .text((d)=>d[1])
+                .attr('x',(d,i)=>i*4)
+                .attr('y',(d,i)=>h-d[1]/100-3)
+                .attr('font-size',3)*/
+
+                        
+                
+            }
+
+
+        });
+
+
+
+    
+    </script>
+</html>
