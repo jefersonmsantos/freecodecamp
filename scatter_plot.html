@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+    </head>
+
+    <style>
+
+
+    </style>
+
+    <body>
+        <h1 id='title'>Doping in professional Bicycle Racing</h1>
+        <div id='graph'></div>
+
+    </body>
+
+    <script>
+        
+        document.addEventListener('DOMContentLoaded',function(){
+            const req = new XMLHttpRequest();
+            req.open("GET",'https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json',true);
+            req.send();
+            req.onload = function(){
+                const json = JSON.parse(req.responseText);
+                console.log(json);
+                
+                
+                    const w = 0.9*window.innerWidth;
+                    const h =0.7*window.innerHeight;
+                    const padding = 50;
+
+                    /*const xScale = d3.scaleLinear().domain([0,d3.max(json,(d,i)=>d.Year)]).range([padding,w-padding]);
+                    const yScale = d3.scaleLinear().domain([0,d3.max(json,(d,i)=>d.Time)]).range([h-padding,padding]);*/
+
+                    const svg = d3.select('div')
+                                .append('svg')
+                                .attr('width',w)
+                                .attr('height',h);
+                    
+                    
+                    svg.selectAll('circle')
+                        .data(json)
+                        .enter()
+                        .append('circle')
+                        .attr('cx',(d,i)=>d[i].Year)
+                        .attr('cy',(d,i)=>h-d[i].Time)
+                        .attr('r',5)
+                        .attr('fill','navy');
+            
+            }
+        });
+
+
+    </script>
+</html>

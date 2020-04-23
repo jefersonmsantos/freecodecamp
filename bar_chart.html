@@ -9,16 +9,35 @@
 
         .bar{
             fill:navy;
+            
         }
 
         .bar:hover{
             fill:red;
         }
 
+        #title{
+            
+            display:flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #graph{
+            display:flex;
+            justify-content: center;
+        }
+
+        #body{
+            
+        }
+
     </style>
 
     <body>
-
+        <h1 id='title'>US Gross Domestic Product (Billions of dollars)</h1>
+        <div id='graph'></div>
     </body>
     <script>
         document.addEventListener('DOMContentLoaded',function(){
@@ -38,16 +57,18 @@
                 
 
 
-                const w = 1100;
-                const h =300;
+                const w = 0.9*window.innerWidth;
+                const h =0.7*window.innerHeight;
+                const padding = 50;
 
-                const xScale = d3.scaleLinear().domain([0,d3.max(json['data'],(d,i)=>i)]).range([0,w]);
-                const yScale = d3.scaleLinear().domain([0,d3.max(json['data'],(d)=>d[1])]).range([h,0]);
+                const xScale = d3.scaleLinear().domain([0,d3.max(json['data'],(d,i)=>i)]).range([padding,w-padding]);
+                const yScale = d3.scaleLinear().domain([0,d3.max(json['data'],(d)=>d[1])]).range([h-padding,padding]);
 
-                const svg = d3.select('body')
+                const svg = d3.select('div')
                             .append('svg')
                             .attr('width',w)
                             .attr('height',h);
+            
                 
                 svg.selectAll('rect')
                 .data(json['data'])
@@ -55,10 +76,11 @@
                 .append('rect')
                 .attr('x',(d,i) => xScale(i))
                 .attr('y',(d,i)=>yScale(d[1]))
-                .attr('width',2)
-                .attr('height',(d,i)=>h-yScale(d[1]))
+                .attr('width',1)
+                .attr('height',(d,i)=>h-yScale(d[1])-padding)
                 .attr('class','bar')
                 .append('title')
+                .attr('id','tooltip')
                 .text((d)=>'Date: ' + d[0] + '\nGDP: ' + d[1])
 
                 /*svg.selectAll('text')
@@ -69,7 +91,26 @@
                 .attr('x',(d,i)=>i*4)
                 .attr('y',(d,i)=>h-d[1]/100-3)
                 .attr('font-size',3)*/
+                
+                const xAxis = d3.axisBottom(xScale)
+                                .ticks(15);
+                                
+                const yAxis = d3.axisLeft(yScale);
 
+                svg.append('g')
+                   .attr('transform','translate(0,'+(h-padding)+')')
+                   .attr('id','x-axis')
+                   .call(xAxis);
+                   
+                
+                svg.append('g')
+                   .attr('transform','translate('+padding+',0)')
+                   .attr('id','y-axis')
+                   
+                   .call(yAxis);
+
+                svg.selectAll('ticks')
+                   .attr('class','tick');
                         
                 
             }
