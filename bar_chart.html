@@ -96,6 +96,7 @@
                                 .ticks(15);
                                 
                 const yAxis = d3.axisLeft(yScale);
+                                
 
                 svg.append('g')
                    .attr('transform','translate(0,'+(h-padding)+')')
@@ -107,7 +108,8 @@
                    .attr('transform','translate('+padding+',0)')
                    .attr('id','y-axis')
                    
-                   .call(yAxis);
+                   .call(yAxis)
+                   .tickformat((d)=>d.Time);
 
                 svg.selectAll('ticks')
                    .attr('class','tick');

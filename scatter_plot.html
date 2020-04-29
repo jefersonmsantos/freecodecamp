@@ -4,7 +4,20 @@
     </head>
 
     <style>
+        .dot:hover{
+            fill:red;
+        }
 
+        #graph{
+            display:flex;
+            justify-content: center;
+        }
+
+        #title{
+            margin-top: 5vh;
+            display:flex;
+            justify-content: center;
+        }
 
     </style>
 
@@ -22,34 +35,104 @@
             req.send();
             req.onload = function(){
                 const json = JSON.parse(req.responseText);
-                console.log(json);
+                    console.log(json[0]);
+                    var color = d3.scaleOrdinal(d3.schemeCategory10);
                 
-                
-                    const w = 0.9*window.innerWidth;
+                    const w = 0.6*window.innerWidth;
                     const h =0.7*window.innerHeight;
                     const padding = 50;
 
-                    /*const xScale = d3.scaleLinear().domain([0,d3.max(json,(d,i)=>d.Year)]).range([padding,w-padding]);
-                    const yScale = d3.scaleLinear().domain([0,d3.max(json,(d,i)=>d.Time)]).range([h-padding,padding]);*/
+                    const xScale = d3.scaleLinear().domain([d3.min(json,(d)=>d.Year)-1,d3.max(json,(d)=>d.Year)]).range([padding+28,w-padding]);
+                    const yScale = d3.scaleLinear().domain([d3.min(json,(d)=>adjust_time(d.Time))*0.999,d3.max(json,(d)=>adjust_time(d.Time))]).range([h-padding,padding]);
 
                     const svg = d3.select('div')
                                 .append('svg')
                                 .attr('width',w)
                                 .attr('height',h);
+                                
+                                
                     
                     
                     svg.selectAll('circle')
                         .data(json)
                         .enter()
                         .append('circle')
-                        .attr('cx',(d,i)=>d[i].Year)
-                        .attr('cy',(d,i)=>h-d[i].Time)
-                        .attr('r',5)
-                        .attr('fill','navy');
+                        .attr('cx',(d)=>xScale(d.Year))
+                        .attr('cy',(d)=>yScale(adjust_time(d.Time)-h))
+                        .attr('r',10)
+                        .attr('fill',(d)=>color(d.Doping != ""))
+                        .attr('class','dot')
+                        .style('stroke','black')
+                        .append('title')
+                        .text((d)=>d.Name + ": "+d.Nationality+'\nYear: '+d.Year+', Time: '+d.Time+'\n\n'+d.Doping);
+                    
+                    const xAxis = d3.axisBottom(xScale)
+                                    .tickFormat(d3.format('d'));
+
+                    const yAxis = d3.axisLeft(yScale)
+                                    
+                                    .tickFormat(d3.timeFormat("%M:%S"));
+
+                    svg.append('g')
+                        .attr('transform','translate(0,'+(h-padding)+')')
+                        .attr('id','x-axis')
+                        .style('font-size',15)
+                        .call(xAxis);
+
+                    svg.append('g')
+                        .attr('transform','translate('+(padding+28)+',0)')
+                        .attr('id','y-axis')
+                        .style('font-size',15)
+                        
+                        .call(yAxis);
+
+                    svg.append('text')
+                        .attr('transform','rotate(-90)')
+                        .attr('x',-h/2)
+                        .attr('dy',18)
+                        .style('font-size',22)
+                        .style('color','black')
+                        .text('Time in minutes');
+                    
+                    console.log(color.domain());
+
+                    var legendContainer = svg.append('g')
+                                            .attr('id','legend');
+                    var legend = legendContainer.selectAll('#legend')
+                                                .data(color.domain())
+                                                .enter()
+                                                .append('g')
+                                                .attr("class", "legend-label")
+                                                .attr('transform',(d,i)=>"translate(0," + (h/2 - i *20) + ")");
+
+                    legend.append("rect")
+                            .attr("x", 0.97*w)
+                            .attr("width", 18)
+                            .attr("height", 18)
+                            .style("fill", color);
+
+                    legend.append('text')
+                            .attr('x',0.97*w-6)
+                            .attr('y',9)
+                            .attr('dy','.35em')
+                            .style('text-anchor','end')
+                            .style('font-size',18)
+                            .text(function(d){
+                                if (d) return 'Riders with doping allegations';
+                                else {
+                                    return 'No doping allegations';
+                                };
+                            });
+
+                    function adjust_time(time){
+                        var parsedTime =time.split(':');
+                        return new Date(1970, 0, 1, 0, parsedTime[0], parsedTime[1]);
+                    }
             
             }
         });
-
+        
+    
 
     </script>
 </html>
