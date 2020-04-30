@@ -24,6 +24,7 @@
     <body>
         <h1 id='title'>Doping in professional Bicycle Racing</h1>
         <div id='graph'></div>
+        <p>Data from 'https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json'</p>
 
     </body>
 
@@ -94,7 +95,7 @@
                         .style('color','black')
                         .text('Time in minutes');
                     
-                    console.log(color.domain());
+                
 
                     var legendContainer = svg.append('g')
                                             .attr('id','legend');
