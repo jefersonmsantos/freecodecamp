@@ -1,12 +1,13 @@
 <html>
     <head>
-        <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+        <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
 
     </head>
     
     <style>
         .rect:hover{
             stroke: black;
+            fill:#fcab68;
         }
 
         #pageTitle{
@@ -51,14 +52,38 @@
 
                 };
 
-                console.log(d3.min(json.monthlyVariance,(d)=>d.variance));
-                console.log(d3.max(json.monthlyVariance,(d)=>d.variance));
+                const monthsNames = {
+                                    1: 'January',
+                                    2: 'February',
+                                    3:'March',
+                                    4:'April',
+                                    5:'May',
+                                    6:'June',
+                                    7:'July',
+                                    8:'August',
+                                    9:'September',
+                                    10: 'October',
+                                    11:'November',
+                                    12:'December'
+                };
+
+                console.log(d3.schemePastel1);
+                colorArray=['#b7fcc8','#fcab68','#5e79f3','#c06122','#0532fc','#af2a08'];
+
 
                 const baseTemperature = json.baseTemperature;
-                var color = d3.scaleOrdinal(d3.schemeCategory10);
-        
+                var color = d3.scaleOrdinal(colorArray);
+                
+                console.log(color);
+
                 const xScale=d3.scaleLinear().domain([d3.min(json.monthlyVariance,(d)=>d.year),d3.max(json.monthlyVariance,(d)=>d.year)]).range([2*padding,w-3*padding]);
-                const yScale=d3.scaleLinear().domain([d3.min(json.monthlyVariance,(d)=>d.month),d3.max(json.monthlyVariance,(d)=>d.month)]).range([h-padding,padding]);
+                const yScale=d3.scaleBand()
+                                .domain([1,2,3,4,5,6,7,8,9,10,11,12])
+                                .range([h-padding,padding])
+                                .paddingInner(0)
+                                .paddingOuter(0)
+                                .align(0)
+                                .round(false);
                 
                 const totalYears = d3.max(json.monthlyVariance,(d)=>d.year) - d3.min(json.monthlyVariance,(d)=>d.year);
 
@@ -73,14 +98,14 @@
                 .enter()
                 .append("rect")
                 .attr("x", (d)=>xScale(d.year))
-                .attr("y", (d)=>h-yScale(d.month)-((h-2*padding)/12))
+                .attr("y", (d)=>yScale(d.month))
                 .attr('fill',(d)=>color(adjustVariance(d.variance)))
                 .attr("width", (w-5*padding)/(totalYears))
                 .attr("height", (h-2*padding)/12)
                 .attr('class','rect')
                 .append('title')
                 .attr('id','tooltip')
-                .text((d)=>'Year: '+d.year+'\nMonth: '+d.month+'\nVariance: '+d.variance);
+                .text((d)=>'Year: '+d.year+'\nMonth: '+monthsNames[d.month]+'\nVariance: '+d.variance+'℃');
                 
                 var ticks = [1,2,3,4,5,6,7,8,9,10,11,12];
                 var tickLabels = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -89,7 +114,8 @@
                                 .tickFormat(d3.format('d'));
                 const yAxis = d3.axisLeft(yScale)
                                 .tickValues(ticks)
-                                .tickFormat((d,i)=> tickLabels[i]);
+                                .tickFormat((d,i)=> tickLabels[i])
+                                .tickSize(10,1);
 
 
 
@@ -110,7 +136,7 @@
                 
                 
                 svg.append('g')
-                    .attr('transform','translate('+2*padding+',0)')
+                    .attr('transform','translate('+2*padding+','+0+')')
                     .attr('id','y-axis')
                     
                     .call(yAxis)
