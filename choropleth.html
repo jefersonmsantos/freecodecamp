@@ -122,7 +122,13 @@
                         .append('title')
                         .attr('id','tooltip')
                         .text((d)=>findCounty(d.id)[0] + ', ' + findCounty(d.id)[2] +'\nHigher education %: ' + findCounty(d.id)[1]);
-
+                    
+                    svg.append('path')
+                        .data(topojson.feature(us,us.objects.states).features)
+                        .attr('d',path(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; })))
+                        .attr('fill','none')
+                        .attr('stroke','white');
+                    
                     function findCounty(countyID){
                         const name = education.filter(function(county){
                             if (county.fips == countyID){
