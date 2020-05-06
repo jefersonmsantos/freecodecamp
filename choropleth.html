@@ -1,0 +1,152 @@
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+        <script src="https://d3js.org/d3-array.v1.min.js"></script>
+        <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+    </head>
+
+
+    <style>
+        body{
+          
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            
+            
+        }
+
+
+    </style>
+
+    <body>
+
+    </body>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded",function(){
+       
+            
+         
+            const req=new XMLHttpRequest();
+            req.open('GET','https://cdn.freecodecamp.org/testable-projects-fcc/data/choropleth_map/counties.json',true);
+            req.send();
+            req.onload=function(){
+                const us=JSON.parse(req.responseText);
+                
+                const req2=new XMLHttpRequest();
+                req2.open('GET','https://cdn.freecodecamp.org/testable-projects-fcc/data/choropleth_map/for_user_education.json',true);
+                req2.send();
+                req2.onload=function(){
+                    const education=JSON.parse(req2.responseText);
+           
+
+                    var path = d3.geoPath();
+
+                    const w = 0.6*window.innerWidth;
+                    const h = 1*window.innerHeight;
+                    const padding = 50;
+
+                    var color=d3.scaleThreshold()
+                                .domain(d3.range(2.6,75.1,(75.1-2.6)/7))
+                                .range(d3.schemeOranges[8]);
+                    
+                    percentDomain = color.domain();
+                    percentDomain.push(75.1);
+     
+
+                    const xScale=d3.scaleLinear().domain([2.6,75.1]).range([0.6*w,0.85*w]);
+                    
+                    const title=d3.select('body')
+                                    .append('text')
+                                    .text('United States Educational Attainment')
+                                    .style('font-size',50);
+                    
+                    const subtitle=d3.select('body')
+                                    .append('text')
+                                    .text("Percentage of adults age 25 and older with a bachelor's degree or higher (2010-2014)")
+                                    .style('font-size',15)
+                                    .style('margin-top',25)
+                                    .style('margin-bottom',26);
+
+
+                    const svg=d3.select('body')
+                                .append('svg')
+                                .attr('width',w)
+                                .attr('height',h);
+                    
+                                
+                    var g = svg.append('g');
+                    
+                    g.selectAll('rect')
+                        .data(color.range())
+                        .enter()
+                        .append('rect')
+                        .attr('x',(d,i)=>xScale(percentDomain[i]))
+                        .attr('y',padding)
+                        .attr('fill',(d)=>d)
+                        .attr('width',(0.85*w-0.6*w)/(color.domain().length+1))
+                        .attr('height',5);
+                                
+                    g.selectAll('text')
+                        .data(color.domain())
+                        .enter()
+                        .append('text')
+                        .attr('x',(d)=>xScale(d)+(0.85*w-0.6*w)/(color.domain().length+1))
+                        .attr('y',padding+20)
+                        .text((d)=>Math.round(d)+'%')
+                        .attr('font-size',10);
+                        
+
+                    for (n in color.domain()){
+                        console.log(n);
+                        g.append('rect')
+                        .attr('x',xScale(percentDomain[n])+(0.85*w-0.6*w)/(color.domain().length+1)+2)
+                        .attr('y',padding)
+                        .attr('width',0.1)
+                        .attr('height',8)
+                        .style('stroke','black');
+
+                    }
+
+
+                    svg.append('g')
+                        .selectAll('path')
+                        .data(topojson.feature(us,us.objects.counties).features)
+                        .enter()
+                        .append('path')
+                        .attr('d',path)
+                        .attr('fill',(d)=>color(findCounty(d.id)[1]))
+                        .append('title')
+                        .attr('id','tooltip')
+                        .text((d)=>findCounty(d.id)[0] + ', ' + findCounty(d.id)[2] +'\nHigher education %: ' + findCounty(d.id)[1]);
+
+                    function findCounty(countyID){
+                        const name = education.filter(function(county){
+                            if (county.fips == countyID){
+                                
+                                return county.area_name;
+                            } 
+                        
+                        
+                        });
+                        return [name[0].area_name,name[0].bachelorsOrHigher,name[0].state];
+                    }
+
+                    
+            }
+            }
+            
+           
+            
+
+            
+
+
+        })
+
+    </script>
+
+</html>
