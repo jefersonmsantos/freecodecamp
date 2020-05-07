@@ -1,0 +1,164 @@
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+        <script src="https://d3js.org/d3-array.v1.min.js"></script>
+        <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+    </head>
+    <style>
+        body{
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+         
+        }
+
+   
+    </style>
+    <body>
+        
+    </body>
+    <script>
+        document.addEventListener('DOMContentLoaded',function(){
+
+            const req = new XMLHttpRequest();
+            req.open('GET','https://cdn.freecodecamp.org/testable-projects-fcc/data/tree_map/video-game-sales-data.json',true);
+            req.send()
+            req.onload=function(){
+                const json = JSON.parse(req.responseText);
+                
+                const w = 0.6*window.innerWidth;
+                const h = 1*window.innerHeight;
+                
+                var color = d3.scaleOrdinal(d3.schemeCategory10);
+                
+                var opacity = d3.scaleLinear()
+                                .domain([50,150])
+                                .range([0.7,1])
+
+                var salesByConsole={};
+                for (n in json.children){
+                    sum=0;
+                    for (m in json.children[n].children){
+                        
+                        sum = sum + parseInt(json.children[n].children[m].value);
+                    }
+                    salesByConsole[json.children[n].name]=sum;
+                }
+                console.log(salesByConsole);
+                console.log(Object.keys(salesByConsole));
+
+
+                const title=d3.select('body')
+                                .append('text')
+                                .text('Video games sales by platform')
+                                .style('font-size',45)
+                                .style('margin-top',25)
+                                .style('margin-bottom',35);
+
+                const svg = d3.select('body')
+                            .append('svg')
+                            .attr('width',w)
+                            .attr('height',h);
+
+                var root = d3.hierarchy(json)
+                            .eachBefore(function(d){
+                                d.data.id = (d.parent ? d.parent.data.id + "." : "") + d.data.name;
+                            })
+                            .sum(sumBySize)
+                            .sort(function(a,b){
+                                return b.height-a.height || b.value-a.value;
+                            });
+
+                var treemap = d3.treemap()
+                                .size([0.8*w,0.7*h])
+                                .paddingInner(1);
+
+                
+
+                treemap(root);
+                
+                console.log(root);
+                console.log(root.children);
+
+                const blocks = svg.selectAll('rect')
+                                    .data(root.leaves())
+                                    .enter()
+                                    .append('rect')
+                                    .attr('x',(d)=>d.x0)
+                                    .attr('y',(d)=>d.y0)
+                                    .attr('width',(d)=>d.x1-d.x0)
+                                    .attr('height',(d)=>d.y1-d.y0)
+                                    .attr('fill',(d)=>color(d.parent.data.name))
+                                    .attr('opacity',0.7)
+                                    .style('word-wrap','break-word')
+                                    .style('stroke','black');
+                                    
+                blocks.append('title')
+                        .attr('id','tooltip')
+                        .text((d)=>'Name: '+d.data.name+'\nCategory: '+d.parent.data.name+'\nValue: '+d.data.value)
+                        .style('position','absolute');
+                
+                text = svg.selectAll('text')
+                            .data(root.leaves())
+                            .enter()
+                            .append('text')
+                            .attr('x',(d)=>d.x0)
+                            .attr('y',(d)=>d.y0+15)
+                            .selectAll('tspan')
+                            .data((d)=>d.data.name.split(/(?=[A-Z][^A-Z])/g))                   
+                            .enter()
+                            .append('tspan')
+                            .attr('dx',0)
+                            .attr('dy',0)
+                            .attr('font-size',13)
+                            .text((d)=>d);
+                    
+
+                var legendContainer = svg.append('g')
+                                        .attr('id','legend')
+
+                var legend = svg.selectAll('#legend')
+                                .data(Object.keys(salesByConsole))
+                                .enter()
+                                .append('g')
+                                .attr('transform',(d,i)=>'translate(0,'+(h/2-i*20)+')');
+
+                legend.append('rect')
+                            .attr('x',0.82*w)
+                            .attr('width',18)
+                            .attr('height',18)
+                            .style('fill',(d)=>color(d));
+                
+                legend.append('text')
+                            .attr('x',0.82*w+20)
+                            .attr('y',16)
+                            .text((d)=>d)
+                            .style('font-size',15);
+                
+                legendContainer.append('text')
+                                .attr('x',0.82*w)
+                                .attr('y',(h/2-Object.keys(salesByConsole).length*20+12))
+                                .text('Platforms')
+                                .style('font-size',18);
+
+                    function sumBySize(d) {
+                        return d.value;
+                    }
+
+                    function parent(t){
+                        const dados = d3.select(t.parentNode);
+                        console.log(dados);
+                    }
+
+
+
+
+            }
+
+
+
+        })
+
+    </script>
+</html>
