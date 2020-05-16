@@ -27,6 +27,7 @@
     <body>
         <h1 id='pageTitle'>Global land surface temperature</h1>
         <h2 id='pageTitle'>Variation from base temperature: 8.66℃</h2>
+        
        
     </body>
 
@@ -79,7 +80,7 @@
                 const xScale=d3.scaleLinear().domain([d3.min(json.monthlyVariance,(d)=>d.year),d3.max(json.monthlyVariance,(d)=>d.year)]).range([2*padding,w-3*padding]);
                 const yScale=d3.scaleBand()
                                 .domain([1,2,3,4,5,6,7,8,9,10,11,12])
-                                .range([h-padding,padding])
+                                .range([h-2*padding,0.5*padding])
                                 .paddingInner(0)
                                 .paddingOuter(0)
                                 .align(0)
@@ -120,7 +121,7 @@
 
 
                 svg.append('g')
-                    .attr('transform','translate(0,'+(h-padding)+')')
+                    .attr('transform','translate(0,'+(h-(2*padding-1))+')')
                     .attr('id','x-axis')
 
                     .call(xAxis)
@@ -128,7 +129,7 @@
                 svg.append('text')
                     
                     .attr('x',(w-4*padding)/2)
-                    .attr('dy',h)
+                    .attr('dy',h-padding)
                     .style('font-size',22)
                     .style('color','black')
                     .text('Years');
@@ -196,7 +197,11 @@
                         .text(function(d){
                             return legendLabel[d];
                         });
-
+                    
+                svg.append('text')
+                    .text('Data from https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json')
+                    .attr('y',h-10)
+                    .attr('font-size',10);
 
                 
 
@@ -227,4 +232,5 @@
         })
     </script>
 
+    
 </html>
